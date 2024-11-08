@@ -92,7 +92,6 @@ var app = http.createServer(function (request, response) {
                 title,
                 list,
                 `
-                <form action="http://localhost:3000/create_process" method="post">
                 <form action="/create_process" method="post">
                 <p><input type="text" name="title" placeholder="title"></p>
                 <p>
