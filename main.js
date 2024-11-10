@@ -2,37 +2,9 @@ var http = require("http");
 var fs = require("fs");
 var url = require("url");
 var qs = require("querystring");
+var path = require("path");
 
-// 기본 템플릿 생성
-function templateHTML(title, list, body, control) {
-    return `
-    <!doctype html>
-    <html>
-    <head>
-    <title>WEB1 - ${title}</title>
-    <meta charset="utf-8">
-    </head>
-    <body>
-    <h1><a href="/">WEB</a></h1>
-    ${list}
-    ${control}
-    ${body}
-    </body>
-    </html>
-`;
-}
-// 글 목록 생성
-function templateList(filelist) {
-    var list = "<ul>";
-    var i = 0;
-    while (i < filelist.length) {
-        list =
-            list + `<li><a href="/?id=${filelist[i]}">${filelist[i]}</a></li>`;
-        i = i + 1;
-    }
-    list = list + "</ul>";
-    return list;
-}
+var template = require("./lib/template.js");
 
 var app = http.createServer(function (request, response) {
     var _url = request.url;
@@ -45,26 +17,27 @@ var app = http.createServer(function (request, response) {
             fs.readdir("./data", function (error, filelist) {
                 var title = "Welcome";
                 var description = "Hello, Node.js";
-                var list = templateList(filelist);
-                var template = templateHTML(
+                var list = template.list(filelist);
+                var html = template.html(
                     title,
                     list,
                     `<h2>${title}</h2> <pre>${description}</pre>`,
                     `<a href="/create">create</a>`
                 );
                 response.writeHead(200);
-                response.end(template);
+                response.end(html);
             });
             // 게시글 조회 (Read)
         } else {
             fs.readdir("./data", function (error, filelist) {
+                var filteredPathId = path.parse(queryData.id).base; // 보안
                 fs.readFile(
-                    `data/${queryData.id}`,
+                    `data/${filteredPathId}`,
                     "utf8",
                     function (err, description) {
                         var title = queryData.id;
-                        var list = templateList(filelist);
-                        var template = templateHTML(
+                        var list = template.list(filelist);
+                        var html = template.html(
                             title,
                             list,
                             `<h2>${title}</h2> <pre>${description}</pre>`,
@@ -78,7 +51,7 @@ var app = http.createServer(function (request, response) {
                             `
                         );
                         response.writeHead(200);
-                        response.end(template);
+                        response.end(html);
                     }
                 );
             });
@@ -87,8 +60,8 @@ var app = http.createServer(function (request, response) {
     } else if (pathname === "/create") {
         fs.readdir("./data", function (error, filelist) {
             var title = "WEB - create";
-            var list = templateList(filelist);
-            var template = templateHTML(
+            var list = template.list(filelist);
+            var html = template.html(
                 title,
                 list,
                 `
@@ -105,7 +78,7 @@ var app = http.createServer(function (request, response) {
                 ""
             );
             response.writeHead(200);
-            response.end(template);
+            response.end(html);
         });
         // 게시글 생성 후 리다이렉션
     } else if (pathname === "/create_process") {
@@ -127,13 +100,14 @@ var app = http.createServer(function (request, response) {
         // 게시글 수정 (Update)
     } else if (pathname === "/update") {
         fs.readdir("./data", function (error, filelist) {
+            var filteredPathId = path.parse(queryData.id).base; // 보안
             fs.readFile(
-                `data/${queryData.id}`,
+                `data/${filteredPathId}`,
                 "utf8",
                 function (err, description) {
                     var title = queryData.id;
-                    var list = templateList(filelist);
-                    var template = templateHTML(
+                    var list = template.list(filelist);
+                    var html = template.html(
                         title,
                         list,
                         `
@@ -153,7 +127,7 @@ var app = http.createServer(function (request, response) {
                         )}">update</a>`
                     );
                     response.writeHead(200);
-                    response.end(template);
+                    response.end(html);
                 }
             );
         });
@@ -191,12 +165,13 @@ var app = http.createServer(function (request, response) {
         request.on("end", function () {
             var post = qs.parse(body);
             var id = post.id;
-            fs.unlink(`data/${id}`, function (error) {
+            var filteredId = path.parse(id).base; // 보안
+            fs.unlink(`data/${filteredId}`, function (error) {
                 response.writeHead(302, { Location: `/` });
                 response.end();
             });
         });
-        // 게시글 삭제 (Delete)
+        // 잘못된 경로
     } else {
         response.writeHead(404);
         response.end("Not found");
