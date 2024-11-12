@@ -3,6 +3,7 @@ var fs = require("fs");
 var url = require("url");
 var qs = require("querystring");
 var path = require("path");
+var sanitizeHtml = require('sanitize-html');
 
 var template = require("./lib/template.js");
 
@@ -36,16 +37,20 @@ var app = http.createServer(function (request, response) {
                     "utf8",
                     function (err, description) {
                         var title = queryData.id;
+                        var sanitizedTitle = sanitizeHtml(title);
+                        var sanitizedDescription = sanitizeHtml(description,{
+                            allowedTags:['h1']
+                        });
                         var list = template.list(filelist);
                         var html = template.html(
-                            title,
+                            sanitizedTitle,
                             list,
-                            `<h2>${title}</h2> <pre>${description}</pre>`,
+                            `<h2>${sanitizedTitle}</h2> <pre>${sanitizedDescription}</pre>`,
                             `<a href="/create">create</a>
-                            <a href="/update?id=${encodeURIComponent(title)}">
+                            <a href="/update?id=${encodeURIComponent(sanitizedTitle)}">
                             update</a>
                             <form action="delete_process" method="post">
-                                <input type="hidden" name="id" value="${title}">
+                            <input type="hidden" name="id" value="${sanitizedTitle}">
                                 <input type="submit" value="delete">
                             </form>
                             `
