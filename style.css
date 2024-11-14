@@ -29,13 +29,13 @@ li {
 
 pre {
     background-color: #e8f8f5;
-    padding: 10px;
-    border-radius: 5px;
-    font-family: Consolas, monospace;
+    padding: 15px 30px 15px 40px;
+    border-style: dashed;
+    border-radius: 10px 100px / 120px;
+    border-width: 3px;
+    border-color: #565656;
+    font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif, monospace;
     color: #2c3e50;
-}
-
-.control {
-    margin-top: 20px;
-    color: #7f8c8d;
+    white-space: pre-wrap;
+    word-wrap: break-word;
 }
