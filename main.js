@@ -177,7 +177,12 @@ var app = http.createServer(function (request, response) {
             });
         });
         // 잘못된 경로
-    } else {
+    } else if (pathname === "/style.css") {
+        fs.readFile("style.css", function (error, data) {
+            response.writeHead(200, { "Content-Type": "text/css" });
+            response.end(data);
+        });
+    }else {
         response.writeHead(404);
         response.end("Not found");
     }
